@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -28,49 +29,88 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     private String URL1 = "https://www.googleapis.com/books/v1/volumes?q=";
-    private String URL2 = "&maxResults=10&prettyPrint=false";
+    private String URL2 = "&maxResults=";
+    private String URL3 = "&prettyPrint=false";
     private String URL_FINAL;
+    private String NOS = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SeekBar seekBar = (SeekBar)findViewById(R.id.seekBar1);
 
-        //String URL_ID = URL+urlmid+URL2;
+        final TextView seekBarValue = (TextView)findViewById(R.id.textView3);
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                // TODO Auto-generated method stub
+                seekBarValue.setText(String.valueOf(progress));
+                NOS=String.valueOf(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+        });
+
+    //String URL_ID = URL+urlmid+URL2;
         Button btn = (Button) findViewById(R.id.button);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final EditText editText = (EditText) findViewById(R.id.editText);
-                String urlmid = editText.getText().toString().trim();
-                String Furlmid = urlmid;
-                Log.v("Middle", urlmid);
-                if (urlmid.isEmpty()) {
-                    editText.setError("Search Term Is Required");
-                } else {
-                    if (urlmid.contains(" ")) {
-                        String temp = urlmid.replaceAll(" ", "%20");
-                        Furlmid = temp;
-                    }
-                    if (isNetworkAvailable()) {
-                        String URL_ID = URL1 + Furlmid + URL2;
-                        URL_FINAL = URL_ID;
-                        Log.v("URL", URL_ID);
-                        BookAsyncTask task = new BookAsyncTask();
-                        task.execute();
-                    }
-                    else {
-                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                        alertDialog.setTitle("No Internet Connection Available");
-                        alertDialog.setMessage("We can not proceed further there is no Internet Conection");
-                        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Dismiss",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
+                if (NOS == "") {
+                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                    alertDialog.setTitle("Not a Valid Input");
+                    alertDialog.setMessage("We can not proceed further Number of Results = 0");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Dismiss",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
 
-                                        dialog.dismiss();
-                                    }
-                                });
-                        alertDialog.show();
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                } else {
+                    final EditText editText = (EditText) findViewById(R.id.editText);
+                    String urlmid = editText.getText().toString().trim();
+                    String Furlmid = urlmid;
+                    Log.v("Middle", urlmid);
+                    if (urlmid.isEmpty()) {
+                        editText.setError("Search Term Is Required");
+                    } else {
+                        if (urlmid.contains(" ")) {
+                            String temp = urlmid.replaceAll(" ", "%20");
+                            Furlmid = temp;
+                        }
+                        if (isNetworkAvailable()) {
+                            String URL_ID = URL1 + Furlmid + URL2 + NOS + URL3;
+                            URL_FINAL = URL_ID;
+                            Log.v("URL", URL_ID);
+                            BookAsyncTask task = new BookAsyncTask();
+                            task.execute();
+                        } else {
+                            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                            alertDialog.setTitle("No Internet Connection Available");
+                            alertDialog.setMessage("We can not proceed further there is no Internet Conection");
+                            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Dismiss",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int which) {
+
+                                            dialog.dismiss();
+                                        }
+                                    });
+                            alertDialog.show();
+                        }
                     }
                 }
             }
